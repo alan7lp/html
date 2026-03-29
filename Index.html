@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>DAX Format Builder · QuidelOrtho Data & Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── QuidelOrtho brand palette ─────────────────────────────────────────── */
+:root {
+  --qo-indigo:       #1B2A6B;
+  --qo-indigo-mid:   #253585;
+  --qo-indigo-light: #3548A8;
+  --qo-indigo-pale:  #E8ECF8;
+  --qo-teal:         #00A3AD;
+  --qo-teal-dark:    #007F88;
+  --qo-teal-pale:    #E0F5F6;
+  --qo-coral:        #E8533A;
+  --qo-coral-pale:   #FDECEA;
+  --qo-emerald:      #1A9E6E;
+  --qo-amber:        #E59E0D;
+  --qo-white:        #FFFFFF;
+  --qo-canvas:       #F4F5FA;
+  --qo-surface:      #FFFFFF;
+  --qo-border:       #DDE1EF;
+  --qo-border-mid:   #C8CEEA;
+  --qo-text:         #0F1635;
+  --qo-text-mid:     #3D4A7A;
+  --qo-text-muted:   #7A84AA;
+  --qo-sidebar-w:    260px;
+  --radius:          10px;
+  --radius-sm:       6px;
+  --radius-lg:       14px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--qo-canvas);
+  color: var(--qo-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── App shell ──────────────────────────────────────────────────────────── */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Top bar ────────────────────────────────────────────────────────────── */
+.topbar {
+  background: var(--qo-indigo);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  height: 56px;
+  gap: 16px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.topbar::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,163,173,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: default;
+}
+.lm-wrap {
+  position: relative;
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+}
+.logo-mark {
+  width: 32px; height: 32px;
+  background: rgba(0,163,173,0.25);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 2;
+  transition: background 0.2s ease;
+}
+.logo-mark svg { display: block; }
+.lm-ghost {
+  position: absolute; top: 0; left: 0;
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; z-index: 1;
+}
+.lm-ghost-a { background: rgba(232,83,58,0.6); }
+.lm-ghost-b { background: rgba(0,163,173,0.5); }
+.topbar-logo.glitching .logo-mark,
+.topbar-logo.typing    .logo-mark { background: var(--qo-teal); }
+.topbar-logo.glitching .lm-ghost-a { animation: iconA 0.07s steps(1) infinite; }
+.topbar-logo.glitching .lm-ghost-b { animation: iconB 0.07s steps(1) infinite; }
+.topbar-logo.typing    .lm-ghost-a { animation: iconA 0.09s steps(1) infinite; }
+.topbar-logo.typing    .lm-ghost-b { animation: iconB 0.09s steps(1) infinite; }
+@keyframes iconA {
+  0%,100% { opacity:0; transform:translate(0,0); }
+  25% { opacity:0.8; transform:translate(-3px,1px); }
+  75% { opacity:0.5; transform:translate(1px,-2px); }
+}
+@keyframes iconB {
+  0%,100% { opacity:0; transform:translate(0,0); }
+  40% { opacity:0.7; transform:translate(2px,1px); }
+  70% { opacity:0.45; transform:translate(-1px,2px); }
+}
+.topbar-brand {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+.glitch-brand {
+  position: relative;
+  display: inline-block;
+}
+.gb-main { color: #fff; position: relative; z-index: 2; }
+.gb-a, .gb-b {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none; z-index: 1; opacity: 0; white-space: nowrap;
+  font-size: 15px; font-weight: 600;
+}
+.glitch-brand, .gb-main, .gb-cursor {
+  pointer-events: none;
+}
+.gb-a { color: #E8533A; }
+.gb-b { color: #00A3AD; }
+.topbar-logo.glitching .gb-a { animation: gA 0.07s steps(1) infinite; }
+.topbar-logo.glitching .gb-b { animation: gB 0.07s steps(1) infinite; }
+.topbar-logo.typing    .gb-a { animation: gA 0.09s steps(1) infinite; }
+.topbar-logo.typing    .gb-b { animation: gB 0.09s steps(1) infinite; }
+@keyframes gA {
+  0%,100% { opacity:0; transform:translate(0,0); clip-path:inset(0 0 100% 0); }
+  25% { opacity:0.85; transform:translate(-2px,1px); clip-path:inset(0 0 55% 0); }
+  75% { opacity:0.6; transform:translate(1px,-1px); clip-path:inset(45% 0 0 0); }
+}
+@keyframes gB {
+  0%,100% { opacity:0; transform:translate(0,0); clip-path:inset(0 0 100% 0); }
+  35% { opacity:0.7; transform:translate(2px,0px); clip-path:inset(20% 0 25% 0); }
+  65% { opacity:0.5; transform:translate(-1px,1px); clip-path:inset(60% 0 0 0); }
+}
+.gb-cursor {
+  display: inline-block; width: 2px; height: 1em;
+  background: var(--qo-teal); margin-left: 1px;
+  vertical-align: middle; opacity: 0;
+}
+.topbar-logo.typing .gb-cursor { animation: gbBlink 0.5s steps(1) infinite; }
+@keyframes gbBlink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+.topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); margin: 0 4px; }
+.topbar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.1px;
+}
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.topbar-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  background: rgba(0,163,173,0.2);
+  color: #5FD8E0;
+  border: 1px solid rgba(0,163,173,0.3);
+}
+.info-trigger {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  font-family: 'Sora', sans-serif;
+}
+.info-trigger:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.5); }
+
+/* ── Body layout ────────────────────────────────────────────────────────── */
+.body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--qo-sidebar-w);
+  background: var(--qo-indigo);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 16px 24px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+.sb-section { margin-bottom: 24px; }
+.sb-section:last-child { margin-bottom: 0; }
+
+.sb-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+/* Category radio items */
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background .12s;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.6);
+  user-select: none;
+  position: relative;
+}
+.sb-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+.sb-item.active {
+  background: rgba(0,163,173,0.18);
+  color: #fff;
+  font-weight: 500;
+}
+.sb-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 18px;
+  background: var(--qo-teal);
+  border-radius: 0 2px 2px 0;
+}
+.sb-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .12s;
+}
+.sb-item.active .sb-dot { border-color: var(--qo-teal); }
+.sb-dot-inner {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--qo-teal);
+  transform: scale(0);
+  transition: transform .12s;
+}
+.sb-item.active .sb-dot-inner { transform: scale(1); }
+
+.sb-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 10px 0; }
+.sb-sub-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255,255,255,0.25);
+  padding: 0 10px;
+  margin: 6px 0 4px;
+}
+
+/* Pill-style toggles in sidebar */
+.sb-pills { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 4px; }
+.sb-pill {
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.18);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all .12s;
+  background: transparent;
+  white-space: nowrap;
+  font-family: 'Sora', sans-serif;
+}
+.sb-pill:hover { border-color: rgba(0,163,173,0.5); color: rgba(255,255,255,0.8); }
+.sb-pill.active { background: var(--qo-teal); border-color: var(--qo-teal); color: #fff; }
+
+/* Dec pills in sidebar */
+.sb-dec-row { display: flex; gap: 4px; padding: 0 4px; }
+.sb-dec {
+  flex: 1;
+  padding: 5px 0;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.18);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: all .12s;
+  color: rgba(255,255,255,0.5);
+  background: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.sb-dec:hover { border-color: rgba(0,163,173,0.5); color: rgba(255,255,255,0.8); }
+.sb-dec.active { background: var(--qo-teal); border-color: var(--qo-teal); color: #fff; }
+
+/* Separator toggle in sidebar */
+.sb-sep-row { display: flex; gap: 0; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid rgba(255,255,255,0.18); margin: 0 4px; }
+.sb-sep-opt {
+  flex: 1;
+  padding: 5px 6px;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: rgba(255,255,255,0.45);
+  background: transparent;
+  transition: all .12s;
+  font-family: 'IBM Plex Mono', monospace;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.18);
+  font-size: 11px;
+}
+.sb-sep-opt:last-child { border-right: none; }
+.sb-sep-opt:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+.sb-sep-opt.active { background: var(--qo-teal); color: #fff; }
+.sb-sep-hint { font-size: 9.5px; color: rgba(255,255,255,0.25); padding: 5px 4px 0; line-height: 1.4; }
+
+/* ── Main content ───────────────────────────────────────────────────────── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Output bar (top of main) ───────────────────────────────────────────── */
+.output-bar {
+  background: var(--qo-surface);
+  border-bottom: 1px solid var(--qo-border);
+  padding: 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 0;
+}
+.output-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.output-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--qo-text-muted);
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+.output-string-wrap {
+  flex: 1;
+  background: var(--qo-indigo);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+.output-string {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--qo-teal);
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 1;
+  letter-spacing: 0.3px;
+}
+.copy-btn {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  background: var(--qo-teal);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 0.2px;
+}
+.copy-btn:hover { background: var(--qo-teal-dark); }
+.copy-btn.copied { background: var(--qo-teal-dark); }
+
+/* Engine toggle in output bar */
+.engine-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.engine-label { font-size: 10px; color: var(--qo-text-muted); white-space: nowrap; }
+.engine-toggle { display: flex; border: 1px solid var(--qo-border-mid); border-radius: var(--radius-sm); overflow: hidden; width: fit-content; }
+.engine-opt {
+  padding: 5px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--qo-text-muted);
+  background: var(--qo-canvas);
+  transition: all .12s;
+  white-space: nowrap;
+  border: none;
+  font-family: 'Sora', sans-serif;
+  border-right: 1px solid var(--qo-border-mid);
+}
+.engine-opt:last-child { border-right: none; }
+.engine-opt:hover { background: var(--qo-indigo-pale); color: var(--qo-indigo); }
+.engine-opt.active { background: var(--qo-indigo); color: #fff; font-weight: 600; }
+.engine-warn {
+  font-size: 11px;
+  color: var(--qo-amber);
+  background: rgba(229,158,13,0.1);
+  border: 1px solid rgba(229,158,13,0.25);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+/* ── Content area ───────────────────────────────────────────────────────── */
+.content { flex: 1; display: flex; overflow: hidden; }
+
+/* ── Sample panel ───────────────────────────────────────────────────────── */
+.sample-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px 20px 20px 24px;
+  gap: 0;
+}
+.sample-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sample-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--qo-text-muted);
+}
+.sample-toggle { display: flex; gap: 4px; }
+.sample-tog {
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--qo-border-mid);
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--qo-text-muted);
+  background: var(--qo-surface);
+  transition: all .12s;
+  font-family: 'Sora', sans-serif;
+}
+.sample-tog:hover { border-color: var(--qo-indigo-light); color: var(--qo-indigo); }
+.sample-tog.active { background: var(--qo-indigo); border-color: var(--qo-indigo); color: #fff; }
+
+.table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--qo-border);
+  background: var(--qo-surface);
+}
+.table-wrap::-webkit-scrollbar { width: 5px; }
+.table-wrap::-webkit-scrollbar-track { background: transparent; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--qo-border-mid); border-radius: 3px; }
+
+table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; }
+thead { position: sticky; top: 0; z-index: 2; }
+th {
+  padding: 10px 20px;
+  font-family: 'Sora', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  text-align: right;
+}
+th:first-child {
+  text-align: left;
+  background: var(--qo-canvas);
+  color: var(--qo-text-muted);
+  border-bottom: 1px solid var(--qo-border);
+}
+th:last-child {
+  background: var(--qo-indigo);
+  color: rgba(255,255,255,0.7);
+  border-bottom: 1px solid var(--qo-indigo-mid);
+}
+td {
+  padding: 6px 20px;
+  text-align: right;
+  font-size: 12px;
+  border-bottom: 1px solid var(--qo-border);
+  white-space: nowrap;
+  transition: background .08s;
+}
+td:first-child { text-align: left; color: var(--qo-text-muted); font-size: 11.5px; }
+td:last-child { color: var(--qo-indigo-light); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--qo-indigo-pale); }
+tr:hover td:last-child { color: var(--qo-teal-dark); }
+
+/* Colour negative values in sample */
+td.neg-val { color: var(--qo-coral) !important; }
+td.zero-val { color: var(--qo-text-muted) !important; font-weight: 400 !important; }
+
+/* ── Modifiers panel ────────────────────────────────────────────────────── */
+.mod-panel {
+  width: 230px;
+  flex-shrink: 0;
+  background: var(--qo-surface);
+  border-left: 1px solid var(--qo-border);
+  overflow-y: auto;
+  padding: 20px 16px;
+}
+.mod-panel::-webkit-scrollbar { width: 4px; }
+.mod-panel::-webkit-scrollbar-track { background: transparent; }
+.mod-panel::-webkit-scrollbar-thumb { background: var(--qo-border-mid); border-radius: 2px; }
+
+.mod-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--qo-text-muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mod-title::after { content: ''; flex: 1; height: 1px; background: var(--qo-border); }
+
+.mod-group { margin-bottom: 14px; }
+.mod-group:last-child { margin-bottom: 0; }
+.mod-group-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--qo-text-mid);
+  margin-bottom: 5px;
+}
+.mod-opts { display: flex; flex-wrap: wrap; gap: 4px; }
+.mod-opt {
+  padding: 3px 9px;
+  border-radius: 100px;
+  border: 1px solid var(--qo-border-mid);
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--qo-text-muted);
+  background: var(--qo-canvas);
+  transition: all .12s;
+  white-space: nowrap;
+  font-family: 'Sora', sans-serif;
+}
+.mod-opt:hover { border-color: var(--qo-indigo-light); color: var(--qo-indigo); background: var(--qo-indigo-pale); }
+.mod-opt.active { background: var(--qo-indigo); border-color: var(--qo-indigo); color: #fff; }
+
+.mod-sep { height: 1px; background: var(--qo-border); margin: 14px 0; }
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,22,53,0.6);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal {
+  background: var(--qo-surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+  border: 1px solid var(--qo-border);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.modal-icon {
+  width: 36px; height: 36px;
+  background: var(--qo-indigo-pale);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.modal h2 { font-size: 17px; font-weight: 600; color: var(--qo-text); }
+.modal-step {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+}
+.modal-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--qo-indigo);
+  color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.modal-text { font-size: 12.5px; color: var(--qo-text); line-height: 1.55; }
+.modal-text strong { color: var(--qo-teal-dark); }
+.modal-info-box {
+  background: var(--qo-indigo-pale);
+  border: 1px solid var(--qo-border-mid);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 14px 0;
+}
+.modal-info-box h4 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--qo-indigo-light); margin-bottom: 8px; }
+.modal-info-box p { font-size: 11.5px; color: var(--qo-text-mid); line-height: 1.6; }
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: var(--qo-indigo-pale);
+  color: var(--qo-indigo-light);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.modal-close {
+  margin-top: 18px;
+  background: var(--qo-indigo);
+  color: #fff;
+  border: none;
+  padding: 9px 24px;
+  border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.modal-close:hover { background: var(--qo-indigo-light); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-logo" id="topbarLogo">
+      <div class="lm-wrap">
+        <div class="lm-ghost lm-ghost-a">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7 5L3 10L7 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 5L17 10L13 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="11.5" y1="4" x2="8.5" y2="16" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="lm-ghost lm-ghost-b">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7 5L3 10L7 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 5L17 10L13 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="11.5" y1="4" x2="8.5" y2="16" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="logo-mark">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7 5L3 10L7 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 5L17 10L13 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="11.5" y1="4" x2="8.5" y2="16" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="topbar-brand">
+        <div class="glitch-brand">
+          <span class="gb-a" id="gbA">Data &amp; Analytics</span>
+          <span class="gb-b" id="gbB">Data &amp; Analytics</span>
+          <span class="gb-main" id="gbMain">Data &amp; Analytics</span>
+          <span class="gb-cursor"></span>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-divider"></div>
+    <span class="topbar-title">DAX Format Builder</span>
+    <div class="topbar-right">
+      <span class="topbar-badge">Power BI</span>
+      <button class="info-trigger" onclick="document.getElementById('modal').style.display='flex'">?</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <div class="sb-section">
+        <div class="sb-label">Display category</div>
+        <div class="sb-sub-label">Numbers</div>
+        <div id="catNumbers"></div>
+        <div class="sb-divider"></div>
+        <div class="sb-sub-label">Percentage</div>
+        <div id="catPct"></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Format style</div>
+        <div id="styleGroup"></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Decimal places</div>
+        <div class="sb-dec-row" id="decGroup"></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Separator convention</div>
+        <div class="sb-sep-row" id="sepGroup"></div>
+        <div class="sb-sep-hint" id="sepHint"></div>
+      </div>
+
+    </div>
+
+    <!-- Main area -->
+    <div class="main">
+
+      <!-- Output bar -->
+      <div class="output-bar">
+        <span class="output-label">Format string</span>
+        <div class="output-bar-row">
+          <div class="output-string-wrap">
+            <div class="output-string" id="outputString"></div>
+          </div>
+          <div class="engine-wrap" id="engineWrap" style="display:none">
+            <span class="engine-label">Engine:</span>
+            <div class="engine-toggle" id="engineToggle"></div>
+          </div>
+          <button class="copy-btn" id="copyBtn" onclick="copyFormat()">Copy</button>
+        </div>
+        <div class="engine-warn" id="engineWarn" style="display:none"></div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+
+        <!-- Sample table -->
+        <div class="sample-panel">
+          <div class="sample-header">
+            <span class="sample-title">Sample output</span>
+            <div class="sample-toggle" id="sampleToggle"></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Raw value</th>
+                  <th>Formatted output</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modifiers -->
+        <div class="mod-panel">
+          <div class="mod-title">Options</div>
+
+          <div class="mod-group">
+            <div class="mod-group-label">Zero display</div>
+            <div class="mod-opts" id="zeroOpts"></div>
+          </div>
+
+          <div class="mod-group">
+            <div class="mod-group-label">Negative values</div>
+            <div class="mod-opts" id="negOpts"></div>
+          </div>
+
+          <div class="mod-group" id="thWrap">
+            <div class="mod-group-label">Thousands separator</div>
+            <div class="mod-opts" id="thOpts"></div>
+          </div>
+
+          <div class="mod-group" id="trailWrap">
+            <div class="mod-group-label">Trailing zeros</div>
+            <div class="mod-opts" id="trailOpts"></div>
+          </div>
+
+          <div class="mod-group" id="curWrap">
+            <div class="mod-group-label">Currency symbol</div>
+            <div class="mod-opts" id="curOpts"></div>
+          </div>
+
+          <div class="mod-sep" id="varianceSep" style="display:none"></div>
+
+          <div class="mod-group" id="plusWrap" style="display:none">
+            <div class="mod-group-label">Plus sign for positives</div>
+            <div class="mod-opts" id="plusOpts"></div>
+          </div>
+
+          <div class="mod-group" id="showIndWrap" style="display:none">
+            <div class="mod-group-label">Variance indicator</div>
+            <div class="mod-opts" id="showIndOpts"></div>
+          </div>
+
+          <div class="mod-group" id="indWrap" style="display:none">
+            <div class="mod-group-label">Indicator style</div>
+            <div class="mod-opts" id="indOpts"></div>
+          </div>
+
+          <div class="mod-group" id="indPosWrap" style="display:none">
+            <div class="mod-group-label">Indicator position</div>
+            <div class="mod-opts" id="indPosOpts"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icon">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <path d="M7 5L3 10L7 15" stroke="#1B2A6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13 5L17 10L13 15" stroke="#1B2A6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="11.5" y1="4" x2="8.5" y2="16" stroke="#3548A8" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>How to use DAX Format Builder</h2>
+    </div>
+    <div class="modal-step"><div class="modal-num">1</div><div class="modal-text">Choose a <strong>display category</strong>, <strong>format style</strong>, <strong>decimal places</strong> and <strong>separator convention</strong> from the left sidebar.</div></div>
+    <div class="modal-step"><div class="modal-num">2</div><div class="modal-text">Use the <strong>Options panel</strong> (right) to customise zero handling, negative display, thousands separator, trailing zeros, and currency symbol.</div></div>
+    <div class="modal-step"><div class="modal-num">3</div><div class="modal-text">The <strong>format string</strong> updates live at the top. Press <strong>Copy</strong> and paste directly into Power BI.</div></div>
+    <div class="modal-info-box">
+      <h4>Format string structure</h4>
+      <p><code>positive ; negative ; zero</code><br><br>Each section is separated by a semicolon. This tool always generates all three parts so you have full control over how zeros appear.</p>
+    </div>
+    <div class="modal-info-box">
+      <h4>Separator convention</h4>
+      <p>The format string itself does not change — Power BI applies separators based on your report locale. The toggle adjusts the <strong>sample preview only</strong> so you can verify output looks correct for your region.</p>
+    </div>
+    <button class="modal-close" onclick="document.getElementById('modal').style.display='none'">Got it</button>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const FD=[
+  {cat:"Default",sty:"Standard (neutral)",dec:0,fmt:"#,0;-#,0;0"},
+  {cat:"Default",sty:"Standard (neutral)",dec:1,fmt:"#,0.0;-#,0.0;0"},
+  {cat:"Default",sty:"Standard (neutral)",dec:2,fmt:"#,0.00;-#,0.00;0"},
+  {cat:"Default",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,0;-#,0;0"},
+  {cat:"Default",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,0.0;-#,0.0;0"},
+  {cat:"Default",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,0.00;-#,0.00;0"},
+  {cat:"Default",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,0;\u25bc -#,0;0"},
+  {cat:"Default",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,0.0;\u25bc -#,0.0;0"},
+  {cat:"Default",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,0.00;\u25bc -#,0.00;0"},
+  {cat:"Thousands",sty:"Standard (neutral)",dec:0,fmt:"#,0,.;-#,0,.;0"},
+  {cat:"Thousands",sty:"Standard (neutral)",dec:1,fmt:"#,0,.0;-#,0,.0;0"},
+  {cat:"Thousands",sty:"Standard (neutral)",dec:2,fmt:"#,0,.00;-#,0,.00;0"},
+  {cat:"Thousands",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,0,.;-#,0,.;0"},
+  {cat:"Thousands",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,0,.0;-#,0,.0;0"},
+  {cat:"Thousands",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,0,.00;-#,0,.00;0"},
+  {cat:"Thousands",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,0,.;\u25bc -#,0,.;0"},
+  {cat:"Thousands",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,0,.0;\u25bc -#,0,.0;0"},
+  {cat:"Thousands",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,0,.00;\u25bc -#,0,.00;0"},
+  {cat:"Thousands (K)",sty:"Standard (neutral)",dec:0,fmt:"#,0,.K;-#,0,.K;0"},
+  {cat:"Thousands (K)",sty:"Standard (neutral)",dec:1,fmt:"#,0,.0K;-#,0,.0K;0"},
+  {cat:"Thousands (K)",sty:"Standard (neutral)",dec:2,fmt:"#,0,.00K;-#,0,.00K;0"},
+  {cat:"Thousands (K)",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,0,.K;-#,0,.K;0"},
+  {cat:"Thousands (K)",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,0,.0K;-#,0,.0K;0"},
+  {cat:"Thousands (K)",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,0,.00K;-#,0,.00K;0"},
+  {cat:"Thousands (K)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,0,.K;\u25bc -#,0,.K;0"},
+  {cat:"Thousands (K)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,0,.0K;\u25bc -#,0,.0K;0"},
+  {cat:"Thousands (K)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,0,.00K;\u25bc -#,0,.00K;0"},
+  {cat:"Millions",sty:"Standard (neutral)",dec:0,fmt:"#,,0,,.;-#,,0,,.;0"},
+  {cat:"Millions",sty:"Standard (neutral)",dec:1,fmt:"#,,0,,.0;-#,,0,,.0;0"},
+  {cat:"Millions",sty:"Standard (neutral)",dec:2,fmt:"#,,0,,.00;-#,,0,,.00;0"},
+  {cat:"Millions",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,,0,,.;-#,,0,,.;0"},
+  {cat:"Millions",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,,0,,.0;-#,,0,,.0;0"},
+  {cat:"Millions",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,,0,,.00;-#,,0,,.00;0"},
+  {cat:"Millions",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,,0,,.;\u25bc -#,,0,,.;0"},
+  {cat:"Millions",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,,0,,.0;\u25bc -#,,0,,.0;0"},
+  {cat:"Millions",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,,0,,.00;\u25bc -#,,0,,.00;0"},
+  {cat:"Millions (M)",sty:"Standard (neutral)",dec:0,fmt:"#,,0,,.M;-#,,0,,.M;0"},
+  {cat:"Millions (M)",sty:"Standard (neutral)",dec:1,fmt:"#,,0,,.0M;-#,,0,,.0M;0"},
+  {cat:"Millions (M)",sty:"Standard (neutral)",dec:2,fmt:"#,,0,,.00M;-#,,0,,.00M;0"},
+  {cat:"Millions (M)",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,,0,,.M;-#,,0,,.M;0"},
+  {cat:"Millions (M)",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,,0,,.0M;-#,,0,,.0M;0"},
+  {cat:"Millions (M)",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,,0,,.00M;-#,,0,,.00M;0"},
+  {cat:"Millions (M)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,,0,,.M;\u25bc -#,,0,,.M;0"},
+  {cat:"Millions (M)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,,0,,.0M;\u25bc -#,,0,,.0M;0"},
+  {cat:"Millions (M)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,,0,,.00M;\u25bc -#,,0,,.00M;0"},
+  {cat:"Billions",sty:"Standard (neutral)",dec:0,fmt:"#,,,0,,,.;-#,,,0,,,.;0"},
+  {cat:"Billions",sty:"Standard (neutral)",dec:1,fmt:"#,,,0,,,.0;-#,,,0,,,.0;0"},
+  {cat:"Billions",sty:"Standard (neutral)",dec:2,fmt:"#,,,0,,,.00;-#,,,0,,,.00;0"},
+  {cat:"Billions",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,,,0,,,.;-#,,,0,,,.;0"},
+  {cat:"Billions",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,,,0,,,.0;-#,,,0,,,.0;0"},
+  {cat:"Billions",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,,,0,,,.00;-#,,,0,,,.00;0"},
+  {cat:"Billions",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,,,0,,,.;\u25bc -#,,,0,,,.;0"},
+  {cat:"Billions",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,,,0,,,.0;\u25bc -#,,,0,,,.0;0"},
+  {cat:"Billions",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,,,0,,,.00;\u25bc -#,,,0,,,.00;0"},
+  {cat:"Billions (B)",sty:"Standard (neutral)",dec:0,fmt:"#,,,0,,,.B;-#,,,0,,,.B;0"},
+  {cat:"Billions (B)",sty:"Standard (neutral)",dec:1,fmt:"#,,,0,,,.0B;-#,,,0,,,.0B;0"},
+  {cat:"Billions (B)",sty:"Standard (neutral)",dec:2,fmt:"#,,,0,,,.00B;-#,,,0,,,.00B;0"},
+  {cat:"Billions (B)",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+#,,,0,,,.B;-#,,,0,,,.B;0"},
+  {cat:"Billions (B)",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+#,,,0,,,.0B;-#,,,0,,,.0B;0"},
+  {cat:"Billions (B)",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+#,,,0,,,.00B;-#,,,0,,,.00B;0"},
+  {cat:"Billions (B)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +#,,,0,,,.B;\u25bc -#,,,0,,,.B;0"},
+  {cat:"Billions (B)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +#,,,0,,,.0B;\u25bc -#,,,0,,,.0B;0"},
+  {cat:"Billions (B)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +#,,,0,,,.00B;\u25bc -#,,,0,,,.00B;0"},
+  {cat:"Percentage",sty:"Standard (neutral)",dec:0,fmt:"0%;-0%;0%"},
+  {cat:"Percentage",sty:"Standard (neutral)",dec:1,fmt:"0.0%;-0.0%;0%"},
+  {cat:"Percentage",sty:"Standard (neutral)",dec:2,fmt:"0.00%;-0.00%;0%"},
+  {cat:"Percentage",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+0%;-0%;0%"},
+  {cat:"Percentage",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+0.0%;-0.0%;0%"},
+  {cat:"Percentage",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+0.00%;-0.00%;0%"},
+  {cat:"Percentage",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +0%;\u25bc -0%;0%"},
+  {cat:"Percentage",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +0.0%;\u25bc -0.0%;0%"},
+  {cat:"Percentage",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +0.00%;\u25bc -0.00%;0%"},
+  {cat:"Percentage point (pp)",sty:"Standard (neutral)",dec:0,fmt:"0pp;-0pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Standard (neutral)",dec:1,fmt:"0.0pp;-0.0pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Standard (neutral)",dec:2,fmt:"0.00pp;-0.00pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Variance with plus (+) sign for pos. var",dec:0,fmt:"+0pp;-0pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Variance with plus (+) sign for pos. var",dec:1,fmt:"+0.0pp;-0.0pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Variance with plus (+) sign for pos. var",dec:2,fmt:"+0.00pp;-0.00pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:0,fmt:"\u25b2 +0pp;\u25bc -0pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:1,fmt:"\u25b2 +0.0pp;\u25bc -0.0pp;0pp"},
+  {cat:"Percentage point (pp)",sty:"Variance with plus (+) sign for pos. var and indicator \u25b2\u25bc",dec:2,fmt:"\u25b2 +0.00pp;\u25bc -0.00pp;0pp"}
+];
+
+const INDICATORS=[
+  {k:'triangle',up:'\u25b2',dn:'\u25bc',l:'\u25b2\u25bc Triangle'},
+  {k:'chevron', up:'\u23f6',dn:'\u23f7',l:'\u23f6\u23f7 Chevron'},
+  {k:'trend',   up:'\u2191',dn:'\u2193',l:'\u2191\u2193 Trend'},
+  {k:'diagonal',up:'\u2197',dn:'\u2198',l:'\u2197\u2198 Diagonal'},
+  {k:'check',   up:'\u2714',dn:'\u2716',l:'\u2714\u2716 Check'}
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let S = {
+  cat:'Default', sty:'Standard (neutral)', dec:2,
+  zero:'zero', neg:'minus', trail:'show', th:'on', cur:'none',
+  ind:'triangle', plus:'show', showInd:'on', indPos:'before',
+  engine:'measure', samples:'realistic', sep:'eu'
+};
+
+// ── Samples ───────────────────────────────────────────────────────────────────
+const NUMS = {
+  realistic:[93847261504.17,8621473950.44,731924806.29,56348127.63,9182734.85,614293.77,47852.39,3196.54,28.41,0.63,0,-0.87,-2847.16,-31956.72,-498731.54,-7263814.90,-84519632.07,-2143876509.31,-61394827150.88],
+  round:[10000000000,1000000000,100000000,10000000,1000000,100000,10000,1000,0.50,0,-0.50,-1000,-10000,-100000,-1000000,-10000000,-100000000,-1000000000,-10000000000]
+};
+const PCTS = {
+  realistic:[0.8734,0.4215,0.1563,0.0847,0.0312,0.005,0,-0.0023,-0.0475,-0.1230,-0.2568,-0.5190,-0.7845],
+  round:[1,0.75,0.50,0.25,0.10,0.05,0.01,0,-0.01,-0.05,-0.10,-0.25,-0.50,-0.75,-1]
+};
+function getSamples(){
+  const p=S.cat==="Percentage"||S.cat==="Percentage point (pp)";
+  return p?PCTS[S.samples]:NUMS[S.samples];
+}
+
+// ── Sep helper ────────────────────────────────────────────────────────────────
+function applyDisplaySep(str){
+  if(S.sep==='us')return str;
+  return str.replace(/\./g,'\x00').replace(/,/g,'.').replace(/\x00/g,',');
+}
+
+// ── Format logic (identical to original) ─────────────────────────────────────
+function lookupBase(){
+  let ds=S.sty;
+  if(ds==='Variance')ds='Variance with plus (+) sign for pos. var';
+  return FD.find(d=>d.cat===S.cat&&d.sty===ds&&d.dec===S.dec);
+}
+function splitFmt(f){
+  const i1=f.indexOf(';'); if(i1===-1)return[f,'',''];
+  const i2=f.indexOf(';',i1+1); if(i2===-1)return[f.substring(0,i1),f.substring(i1+1),''];
+  return[f.substring(0,i1),f.substring(i1+1,i2),f.substring(i2+1)];
+}
+function toBrackets(neg){
+  let p='',c=neg;
+  if(c.startsWith('\u25bc ')){p='\u25bc ';c=c.substring(2);}
+  if(c.startsWith('-'))c=c.substring(1);
+  return p+'('+c+')';
+}
+function applyMods(base){
+  let[pos,neg,zero]=splitFmt(base);
+  if(S.th==='off'){pos=pos.replace(/#,+/g,'');neg=neg.replace(/#,+/g,'');}
+  if(S.trail==='hide'){
+    pos=pos.replace(/\.0+/,m=>m.replace(/0/g,'#'));
+    neg=neg.replace(/\.0+/,m=>m.replace(/0/g,'#'));
+  }
+  if(S.sty.startsWith('Variance')&&S.plus==='hide'){pos=pos.replace(/^\+/,'');}
+  if(S.neg==='brackets')neg=toBrackets(neg);
+  const isPct=S.cat==="Percentage"||S.cat==="Percentage point (pp)";
+  if(S.cur!=='none'&&!isPct){
+    const cs=S.cur==='euro'?'\u20ac':'$';
+    pos=pos.replace(/(#|0)/,m=>cs+m);
+    neg=neg.replace(/(#|0)/,m=>cs+m);
+    if(zero&&zero!=='-'&&zero!=='')zero=zero.replace(/(0)/,m=>cs+m);
+  }
+  if(S.zero==='dash')zero='\u2013';
+  else if(S.zero==='empty')zero='""';
+  const pair=INDICATORS.find(p=>p.k===S.ind);
+  const hasInd=S.sty.startsWith('Variance')&&S.showInd==='on'&&pair;
+  if(hasInd){
+    if(S.indPos==='before'){pos=pair.up+' '+pos;neg=pair.dn+' '+neg;}
+    else{pos=pos+' '+pair.up;neg=neg+' '+pair.dn;}
+  }
+  let sz='0';
+  if(S.cat==='Percentage')sz='0%';
+  else if(S.cat==='Percentage point (pp)')sz='0pp';
+  else if(S.cat==='Thousands (K)')sz='0K';
+  else if(S.cat==='Millions (M)')sz='0M';
+  else if(S.cat==='Billions (B)')sz='0B';
+  if(S.cur!=='none'&&!isPct){const cs=S.cur==='euro'?'\u20ac':'$';sz=cs+sz;}
+  if(S.zero==='zero')return pos+';'+neg+';'+sz;
+  if(S.zero==='plain')return pos+';'+neg+';0';
+  return pos+';'+neg+';'+zero;
+}
+function toFormatDax(f){
+  return f.split(';').map(s=>{
+    if(!s)return s;
+    s=s.replace(/\.#+/,m=>m.replace(/#/g,'0'));
+    s=s.replace(/\.(?=[A-Za-z );]|$)/g,'');
+    return s;
+  }).join(';');
+}
+function getFinal(){
+  const b=lookupBase(); if(!b)return'\u2014';
+  const mf=applyMods(b.fmt);
+  const df=toFormatDax(mf);
+  const diff=mf!==df;
+  return (S.engine==='format'&&diff)?df:mf;
+}
+
+// ── Sample formatter ──────────────────────────────────────────────────────────
+function fmtSample(v){
+  const cat=S.cat,isNeg=v<0,isZero=v===0;
+  let abs=Math.abs(v),div=1,suf='',useTh=true;
+  switch(cat){
+    case"Thousands":div=1000;break;
+    case"Thousands (K)":div=1000;suf='K';break;
+    case"Millions":div=1000000;break;
+    case"Millions (M)":div=1000000;suf='M';break;
+    case"Billions":div=1000000000;break;
+    case"Billions (B)":div=1000000000;suf='B';break;
+    case"Percentage":abs=Math.abs(v)*100;suf='%';useTh=false;break;
+    case"Percentage point (pp)":suf='pp';useTh=false;break;
+  }
+  if(cat!=="Percentage")abs=Math.abs(v)/div; else abs=Math.abs(v)*100;
+  if(S.th==='off')useTh=false;
+  if(isZero){
+    if(S.zero==='dash')return'\u2013';
+    if(S.zero==='empty')return'';
+    if(S.zero==='plain')return'0';
+    const sym=S.cur==='euro'?'\u20ac':S.cur==='dollar'?'$':'';
+    const iP=cat==='Percentage'||cat==='Percentage point (pp)';
+    if(cat==='Percentage')return'0%';
+    if(cat==='Percentage point (pp)')return'0pp';
+    let zs='';if(cat==='Thousands (K)')zs='K';else if(cat==='Millions (M)')zs='M';else if(cat==='Billions (B)')zs='B';
+    return(iP?'':sym)+'0'+zs;
+  }
+  let f;
+  if(useTh){const p=abs.toFixed(S.dec).split('.');p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');f=p.join('.');}
+  else f=abs.toFixed(S.dec);
+  if(S.trail==='hide'&&S.dec>0){f=f.replace(/\.(\d*?)0+$/,(_,d)=>d.replace(/0+$/,'')?'.'+d.replace(/0+$/,''):'');}
+  f+=suf;
+  const iP2=cat==="Percentage"||cat==="Percentage point (pp)";
+  if(S.cur!=='none'&&!iP2){const s=S.cur==='euro'?'\u20ac':'$';f=s+f;}
+  f=applyDisplaySep(f);
+  const pair=INDICATORS.find(p=>p.k===S.ind);
+  const hasInd=S.sty.startsWith('Variance')&&S.showInd==='on'&&pair;
+  const bef=S.indPos==='before';
+  const showP=S.sty.startsWith('Variance')&&S.plus==='show';
+  if(isNeg){
+    let n='-'+f;if(S.neg==='brackets')n='('+f+')';
+    if(hasInd)return bef?pair.dn+' '+n:n+' '+pair.dn;return n;
+  }
+  const sg=showP?'+':'';
+  if(hasInd)return bef?pair.up+' '+sg+f:sg+f+' '+pair.up;
+  return sg+f;
+}
+function fmtRaw(v){
+  const iP=S.cat==="Percentage"||S.cat==="Percentage point (pp)";
+  const d=iP?4:2;
+  const n=v<0,a=Math.abs(v);
+  const parts=a.toFixed(d).split('.');
+  parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return applyDisplaySep((n?'-':'')+parts.join('.'));
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function h(tag,cls,html,attrs=''){return`<${tag} class="${cls}" ${attrs}>${html}</${tag}>`;}
+
+function render(){
+  // Sidebar: categories
+  const numCats=['Default','Thousands','Thousands (K)','Millions','Millions (M)','Billions','Billions (B)'];
+  const pctCats=['Percentage','Percentage point (pp)'];
+  document.getElementById('catNumbers').innerHTML=numCats.map(c=>sbItem(c)).join('');
+  document.getElementById('catPct').innerHTML=pctCats.map(c=>sbItem(c)).join('');
+
+  // Sidebar: styles
+  const styles=['Standard (neutral)','Variance'];
+  document.getElementById('styleGroup').innerHTML=styles.map(s=>{
+    const isActive=s==='Variance'?S.sty.startsWith('Variance'):S.sty===s;
+    return sbItem(s,isActive,'sty','`'+s+'`');
+  }).join('');
+
+  // Sidebar: decimals
+  document.getElementById('decGroup').innerHTML=[0,1,2].map(d=>
+    `<div class="sb-dec${d===S.dec?' active':''}" onclick="sel('dec',${d})">${d}</div>`
+  ).join('');
+
+  // Sidebar: separator
+  const sepOpts=[{k:'eu',l:'1.000,00'},{k:'us',l:'1,000.00'}];
+  document.getElementById('sepGroup').innerHTML=sepOpts.map(o=>
+    `<div class="sb-sep-opt${S.sep===o.k?' active':''}" onclick="sel('sep','${o.k}')">${o.l}</div>`
+  ).join('');
+  document.getElementById('sepHint').textContent = S.sep==='eu'
+    ? 'EU style — preview only'
+    : 'US/UK style — preview only';
+
+  // Sample toggle
+  document.getElementById('sampleToggle').innerHTML=[{k:'realistic',l:'Realistic'},{k:'round',l:'Simple'}].map(o=>
+    `<div class="sample-tog${S.samples===o.k?' active':''}" onclick="sel('samples','${o.k}')">${o.l}</div>`
+  ).join('');
+
+  // Sample table
+  document.getElementById('tableBody').innerHTML=getSamples().map(v=>{
+    const fv=fmtSample(v);
+    const cls=v<0?'neg-val':v===0?'zero-val':'';
+    return`<tr><td>${fmtRaw(v)}</td><td class="${cls}">${fv}</td></tr>`;
+  }).join('');
+
+  // Modifiers
+  const isPct=S.cat==="Percentage"||S.cat==="Percentage point (pp)";
+  const hasSuf=['Thousands (K)','Millions (M)','Billions (B)','Percentage','Percentage point (pp)'].includes(S.cat)||S.cur!=='none';
+  if(!hasSuf&&S.zero==='plain')S.zero='zero';
+  const zOpts=[{k:'zero',l:'0'}];
+  if(hasSuf)zOpts.push({k:'plain',l:'0 (no suffix)'});
+  zOpts.push({k:'dash',l:'Dash –'},{k:'empty',l:'Empty'});
+  mo('zeroOpts',zOpts,'zero');
+  mo('negOpts',[{k:'minus',l:'Minus −'},{k:'brackets',l:'Brackets'}],'neg');
+  document.getElementById('thWrap').style.display=isPct?'none':'';
+  mo('thOpts',[{k:'on',l:'On'},{k:'off',l:'Off'}],'th');
+  const showTrail=S.dec>0;
+  document.getElementById('trailWrap').style.display=showTrail?'':'none';
+  if(!showTrail&&S.trail==='hide')S.trail='show';
+  mo('trailOpts',[{k:'show',l:'Show'},{k:'hide',l:'Hide'}],'trail');
+  document.getElementById('curWrap').style.display=isPct?'none':'';
+  mo('curOpts',[{k:'none',l:'None'},{k:'euro',l:'€ Euro'},{k:'dollar',l:'$ Dollar'}],'cur');
+
+  const isVar=S.sty.startsWith('Variance');
+  document.getElementById('varianceSep').style.display=isVar?'':'none';
+  document.getElementById('plusWrap').style.display=isVar?'':'none';
+  document.getElementById('showIndWrap').style.display=isVar?'':'none';
+  if(isVar){
+    mo('plusOpts',[{k:'show',l:'Show +'},{k:'hide',l:'Hide'}],'plus');
+    mo('showIndOpts',[{k:'on',l:'Show'},{k:'off',l:'None'}],'showInd');
+    const showInd2=isVar&&S.showInd==='on';
+    document.getElementById('indWrap').style.display=showInd2?'':'none';
+    document.getElementById('indPosWrap').style.display=showInd2?'':'none';
+    if(showInd2){
+      mo('indOpts',INDICATORS.map(p=>({k:p.k,l:p.l})),'ind');
+      mo('indPosOpts',[{k:'before',l:'Before'},{k:'after',l:'After'}],'indPos');
+    }
+  } else {
+    document.getElementById('indWrap').style.display='none';
+    document.getElementById('indPosWrap').style.display='none';
+  }
+
+  // Output
+  const b=lookupBase();
+  const mf=b?applyMods(b.fmt):'\u2014';
+  const df=b?toFormatDax(mf):'\u2014';
+  const diff=mf!==df;
+
+  const ewrap=document.getElementById('engineWrap');
+  if(diff){
+    ewrap.style.display='flex';
+    document.getElementById('engineToggle').innerHTML=[{k:'measure',l:'Measure / Dynamic'},{k:'format',l:'DAX FORMAT()'}].map(o=>
+      `<div class="engine-opt${S.engine===o.k?' active':''}" onclick="sel('engine','${o.k}')">${o.l}</div>`
+    ).join('');
+  } else {
+    ewrap.style.display='none';
+    if(S.engine==='format')S.engine='measure';
+  }
+  const warn=document.getElementById('engineWarn');
+  if(S.engine==='format'&&S.trail==='hide'&&S.dec>0){
+    warn.style.display='block';
+    warn.textContent='\u26a0 Hiding trailing zeros in DAX FORMAT() may result in a trailing decimal separator \u2014 this setting is ignored for consistent output.';
+  } else { warn.style.display='none'; warn.textContent=''; }
+
+  const final=(S.engine==='format'&&diff)?df:mf;
+  const el=document.getElementById('outputString');
+  el.textContent=final;
+  let fs=15;el.style.fontSize=fs+'px';
+  while(el.scrollWidth>el.parentElement.clientWidth-100&&fs>9){fs--;el.style.fontSize=fs+'px';}
+}
+
+function sbItem(cat,isActiveOverride,type,valOverride){
+  const isActive=isActiveOverride!==undefined?isActiveOverride:cat===S.cat;
+  const clickVal=valOverride||`'${cat.replace(/'/g,"\\'")}'`;
+  const clickType=type||'cat';
+  return`<div class="sb-item${isActive?' active':''}" onclick="sel('${clickType}',${clickVal})">
+    <div class="sb-dot"><div class="sb-dot-inner"></div></div>
+    <span>${cat}</span>
+  </div>`;
+}
+
+function mo(id,opts,key){
+  document.getElementById(id).innerHTML=opts.map(o=>
+    `<div class="mod-opt${S[key]===o.k?' active':''}" onclick="sel('${key}','${o.k}')">${o.l}</div>`
+  ).join('');
+}
+
+function sel(k,v){
+  if(k==='cat')S.cat=v;
+  else if(k==='sty'){S.sty=v==='Variance'?'Variance with plus (+) sign for pos. var':v;}
+  else if(k==='dec')S.dec=v;
+  else S[k]=v;
+  render();
+}
+
+function copyFormat(){
+  navigator.clipboard.writeText(getFinal()).then(()=>{
+    const b=document.getElementById('copyBtn');
+    b.classList.add('copied');b.textContent='Copied!';
+    setTimeout(()=>{b.classList.remove('copied');b.textContent='Copy';},2000);
+  });
+}
+
+render();
+
+// ── Logo glitch + typewriter animation ───────────────────────────────────────
+(function(){
+  const FULL = 'Data & Analytics';
+  const logo   = document.getElementById('topbarLogo');
+  const gbMain = document.getElementById('gbMain');
+  const gbA    = document.getElementById('gbA');
+  const gbB    = document.getElementById('gbB');
+
+  let running  = false;
+  let played   = false;
+  let typeTimer;
+
+  const CHAR_DELAY      = 90;
+  const GLITCH_DURATION = 320;
+
+  function sync(text) {
+    gbMain.textContent = text;
+    gbA.textContent    = text;
+    gbB.textContent    = text;
+  }
+
+  function reset() {
+    clearTimeout(typeTimer);
+    running = false;
+    logo.classList.remove('glitching','typing');
+    sync(FULL);
+    gbMain.style.transform = '';
+  }
+
+  function run() {
+    if (running) return;
+    running = true;
+
+    logo.classList.add('glitching');
+    sync(FULL);
+
+    setTimeout(function(){
+      if (!running) return;
+      logo.classList.remove('glitching');
+      logo.classList.add('typing');
+      sync('');
+      let i = 0;
+      function typeNext() {
+        if (!running) return;
+        if (i <= FULL.length) {
+          sync(FULL.slice(0, i));
+          if (i > 0 && Math.random() > 0.68) {
+            gbMain.style.transform = 'translateX('+(Math.random()-0.5)*2+'px)';
+            setTimeout(function(){ gbMain.style.transform=''; }, 35);
+          }
+          i++;
+          typeTimer = setTimeout(typeNext, CHAR_DELAY);
+        } else {
+          logo.classList.remove('typing');
+          running = false;
+        }
+      }
+      typeNext();
+    }, GLITCH_DURATION);
+  }
+
+  const iconEl = logo.querySelector('.lm-wrap');
+
+  iconEl.addEventListener('mouseenter', function(){
+    if (!played) { played = true; run(); }
+  });
+  logo.addEventListener('mouseleave', function(){
+    played = false;
+    reset();
+  });
+})();
+</script>
+</body>
+</html>
