@@ -568,16 +568,6 @@ body {
   justify-content: flex-end;
 }
 
-.mod-seg {
-  min-width: 168px;
-  max-width: 210px;
-}
-
-.mod-seg .seg-opt {
-  padding: 7px 10px;
-  font-size: 12px;
-}
-
 .mod-pill {
   padding: 5px 14px;
   font-size: 12px;
@@ -952,10 +942,6 @@ tr:hover td {
   }
   .mod-row {
     align-items: flex-start;
-  }
-  .mod-seg {
-    width: 100%;
-    max-width: 220px;
   }
 }
 

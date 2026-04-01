@@ -349,7 +349,7 @@ function render() {
 
   // Decimals
   document.getElementById('decGroup').innerHTML = [0, 1, 2].map(function(d) {
-    return '<div class="seg-opt' + (d === S.dec ? ' active' : '') + '" role="radio" aria-checked="' + (d === S.dec) + '" tabindex="' + (d === S.dec ? '0' : '-1') + '" onclick="sel(\'dec\',' + d + ')">' + d + '</div>';
+    return '<div class="mod-pill' + (d === S.dec ? ' active' : '') + '" role="radio" aria-checked="' + (d === S.dec) + '" tabindex="' + (d === S.dec ? '0' : '-1') + '" onclick="sel(\'dec\',' + d + ')">' + d + '</div>';
   }).join('');
 
   // Sample toggle
