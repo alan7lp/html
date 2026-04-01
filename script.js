@@ -437,8 +437,8 @@ function render() {
   var final = (S.engine === 'format' && diff) ? df : mf;
   var el = document.getElementById('outputString');
   el.textContent = final;
-  var fs = 15; el.style.fontSize = fs + 'px';
-  while (el.scrollWidth > el.parentElement.clientWidth - 100 && fs > 9) { fs--; el.style.fontSize = fs + 'px'; }
+  el.style.fontSize = '16px';
+  el.parentElement.scrollLeft = 0;
 }
 
 /* ── Copy ────────────────────────────────────────────────────────────── */
@@ -452,14 +452,36 @@ function copyFormat() {
 
 /* ── Modal ───────────────────────────────────────────────────────────── */
 function openModal() {
-  document.getElementById('modal').style.display = 'flex';
+  var overlay = document.getElementById('modal');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      overlay.classList.add('visible');
+    });
+  });
+  var closeX = overlay.querySelector('.modal-close-x');
+  if (closeX) closeX.focus();
 }
+
 function closeModal() {
-  document.getElementById('modal').style.display = 'none';
+  var overlay = document.getElementById('modal');
+  overlay.classList.remove('visible');
+  setTimeout(function() {
+    overlay.style.display = 'none';
+  }, 250);
 }
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeModal();
+  var overlay = document.getElementById('modal');
+  if (overlay.style.display !== 'flex') return;
+  if (e.key === 'Tab') {
+    var focusable = overlay.querySelectorAll('button, [tabindex]');
+    if (focusable.length === 0) return;
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
 });
 
 /* ── Init ────────────────────────────────────────────────────────────── */
